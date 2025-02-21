@@ -1,0 +1,18 @@
+{
+    "files.associations": {
+        "parse_proc_spec.h": "c",
+        "unistd.h": "c",
+        "sched.h": "c",
+        "unistd_64.h": "c",
+        "stdlib.h": "c",
+        "mount.h": "c",
+        "helper.h": "c",
+        "isoproc.h": "c",
+        "process.h": "c",
+        "stdio.h": "c",
+        "logger.h": "c",
+        "types.h": "c",
+        "parser.h": "c",
+        "epoll.h": "c"
+    }
+}

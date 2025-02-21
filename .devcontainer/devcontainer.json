@@ -1,0 +1,7 @@
+{
+    "name": "c-dev-container",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": "."
+    }
+}
