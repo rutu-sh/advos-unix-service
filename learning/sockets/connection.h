@@ -3,5 +3,6 @@
 
 #define SOCKET_NAME "/tmp/sock-test.socket"
 #define BUFFER_SIZE 12
+#define NO_EVENTS 20
 
 #endif

@@ -5,6 +5,7 @@
 #include<errno.h>
 #include<stdio.h>
 #include<string.h>
+#include <fcntl.h>
 
 #include "connection.h"
 
@@ -23,6 +24,8 @@ int main() {
         exit(EXIT_FAILURE);
     }
 
+    printf("data sock before: %d\n", data_sock);
+
     memset(&name, 0, sizeof(name));
     name.sun_family = AF_UNIX;
     strncpy(name.sun_path, SOCKET_NAME, sizeof(name.sun_path) - 1 );
@@ -33,9 +36,18 @@ int main() {
         exit(EXIT_FAILURE);
     }
 
+    printf("data sock after: %d\n", data_sock);
+
+
     for(;;){
         printf("\nclient> ");
         scanf("%s", w_buffer);
+        
+        if (strcmp(w_buffer, "exit_pls") == 0) {
+            close(data_sock);
+            printf("exiting...\n");
+            exit(EXIT_SUCCESS);
+        }
         w = write( data_sock, w_buffer, sizeof(w_buffer) ); 
         if( w == -1 ) {
             perror("write");
