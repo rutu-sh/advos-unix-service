@@ -24,8 +24,6 @@ int main() {
         exit(EXIT_FAILURE);
     }
 
-    printf("data sock before: %d\n", data_sock);
-
     memset(&name, 0, sizeof(name));
     name.sun_family = AF_UNIX;
     strncpy(name.sun_path, SOCKET_NAME, sizeof(name.sun_path) - 1 );
@@ -35,8 +33,6 @@ int main() {
         perror("connect");
         exit(EXIT_FAILURE);
     }
-
-    printf("data sock after: %d\n", data_sock);
 
 
     for(;;){
