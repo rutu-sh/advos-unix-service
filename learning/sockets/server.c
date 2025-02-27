@@ -1,12 +1,12 @@
-#include<sys/socket.h>
-#include<sys/un.h>
-#include<stdlib.h>
-#include<unistd.h>
-#include<errno.h>
-#include<stdio.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <errno.h>
+#include <stdio.h>
 #include <sys/epoll.h>
 #include <fcntl.h>
-#include<string.h>
+#include <string.h>
 
 #include "connection.h"
 
@@ -23,7 +23,7 @@ int main() {
     char               buffer[BUFFER_SIZE];
     ssize_t            r,w;
     struct sockaddr_un name;
-    epoll_event ev, all_events[NO_EVENTS];
+    epoll_event ev, all_events[MAX_CONNECTIONS];
 
     conn_sock = socket(AF_UNIX, SOCK_STREAM, 0);
     if ( conn_sock == -1 ) {
