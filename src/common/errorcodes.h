@@ -1,0 +1,6 @@
+#ifndef COMMON_ERROR_H
+#define COMMON_ERROR_H
+
+#define ERROR_SERVER_DOMAIN_SOCKET_CREATION 1001
+
+#endif
