@@ -23,7 +23,7 @@ int main() {
     char               buffer[BUFFER_SIZE];
     ssize_t            r,w;
     struct sockaddr_un name;
-    epoll_event ev, all_events[MAX_CONNECTIONS];
+    epoll_event        ev, all_events[MAX_CONNECTIONS];
 
     conn_sock = socket(AF_UNIX, SOCK_STREAM, 0);
     if ( conn_sock == -1 ) {

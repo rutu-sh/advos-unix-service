@@ -13,6 +13,8 @@
         "logger.h": "c",
         "types.h": "c",
         "parser.h": "c",
-        "epoll.h": "c"
+        "epoll.h": "c",
+        "string.h": "c",
+        "errorcodes.h": "c"
     }
 }
