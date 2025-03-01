@@ -8,6 +8,7 @@
 #include <fcntl.h>
 
 #include "connection.h"
+#include "passfd.h"
 
 
 int main() {
@@ -24,8 +25,6 @@ int main() {
         exit(EXIT_FAILURE);
     }
 
-    printf("data sock before: %d\n", data_sock);
-
     memset(&name, 0, sizeof(name));
     name.sun_family = AF_UNIX;
     strncpy(name.sun_path, SOCKET_NAME, sizeof(name.sun_path) - 1 );
@@ -36,8 +35,6 @@ int main() {
         exit(EXIT_FAILURE);
     }
 
-    printf("data sock after: %d\n", data_sock);
-
 
     for(;;){
         printf("\nclient> ");
@@ -47,6 +44,29 @@ int main() {
             close(data_sock);
             printf("exiting...\n");
             exit(EXIT_SUCCESS);
+        }
+        if (strcmp(w_buffer, "GETFD") == 0) {
+            w = write(data_sock, w_buffer, strlen(w_buffer));
+            if( w == -1 ) {
+                perror("write");
+                exit(EXIT_FAILURE);
+            }
+            printf("Request sent, waiting for file descriptor...\n");
+            int fd = recv_fd(data_sock);
+            if (fd < 0) {
+                fprintf(stderr, "recv_fd failed\n");
+                continue;
+            }
+            printf("Received file descriptor: %d\n", fd);
+            printf("File content:\n");
+            while ((r = read(fd, r_buffer, sizeof(r_buffer)-1)) > 0) {
+                r_buffer[r] = '\0';
+                printf("%s", r_buffer);
+            }
+            if (r < 0)
+                perror("read");
+            close(fd);
+            continue;
         }
         w = write( data_sock, w_buffer, sizeof(w_buffer) ); 
         if( w == -1 ) {
