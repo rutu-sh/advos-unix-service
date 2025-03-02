@@ -9,6 +9,7 @@
 #include <string.h>
 
 #include "connection.h"
+#include "passfd.h"
 #include "auth.h"
 
 typedef struct epoll_event epoll_event;
@@ -122,8 +123,20 @@ int main() {
                     close(fd);
                     epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL);
                 } else {
-                    buffer[sizeof(buffer) - 1] = 0;
-
+                    buffer[r] = '\0';
+                    if (strncmp(buffer, "GETFD", 5) == 0) {
+                        int fd_file = open("./testfile.txt", O_RDONLY);
+                        if (fd_file < 0) {
+                            perror("open testfile.txt");
+                        } else {
+                            printf("Sending file descriptor for testfile.txt to client fd %d\n", fd);
+                            if(send_fd(fd, fd_file) < 0) {
+                                fprintf(stderr, "send_fd error\n");
+                            }
+                            close(fd_file);
+                        }
+                        continue;
+                    }
                     w = write(fd, buffer, sizeof(buffer));
                     if( w == -1 ) {
                         perror("write\n");
