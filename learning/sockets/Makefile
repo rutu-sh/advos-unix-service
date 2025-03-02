@@ -1,5 +1,5 @@
 compile-server:
-	gcc -o server.out server.c passfd.c connection.h
+	gcc -o server server.c  passfd.c ../../auth/auth.c connection.h
 
 
 compile-client:
@@ -7,4 +7,4 @@ compile-client:
 
 
 clean:
-	rm client.out server.out
+	rm client server

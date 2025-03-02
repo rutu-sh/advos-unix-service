@@ -10,6 +10,8 @@
 
 #include "connection.h"
 #include "passfd.h"
+#include "../../auth/auth.h"
+
 
 typedef struct epoll_event epoll_event;
 
@@ -83,6 +85,13 @@ int main() {
             // if server gets accept req
             if (fd == conn_sock) {
                 while ((client_fd = accept(conn_sock, NULL, NULL)) != -1) {
+
+                    // Calls authentication function
+                    if (!is_client_authorized(client_fd)) {
+                        close(client_fd);
+                        continue;
+                    }
+
                     set_nonblocking(client_fd);
 
                     // add new client to epoll
