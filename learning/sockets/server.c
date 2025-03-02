@@ -26,7 +26,7 @@ int main() {
     char               buffer[BUFFER_SIZE];
     ssize_t            r,w;
     struct sockaddr_un name;
-    epoll_event ev, all_events[NO_EVENTS];
+    epoll_event        ev, all_events[MAX_CONNECTIONS];
 
     conn_sock = socket(AF_UNIX, SOCK_STREAM, 0);
     if ( conn_sock == -1 ) {
@@ -72,7 +72,7 @@ int main() {
 
     for(;;) {
         int client_fd;
-        int no_fds = epoll_wait(epoll_fd, all_events, NO_EVENTS, -1);
+        int no_fds = epoll_wait(epoll_fd, all_events, MAX_CONNECTIONS, -1);
         if (no_fds == -1) {
             perror("epoll_wait err");
             break;
