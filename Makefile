@@ -34,7 +34,7 @@ $(CLIENT_TARGET): $(CLIENT_OBJECTS)
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
-	$(CC) -c -o $@ $< $(CFLAGS)
+	$(CC) $(CFLAGS) -c -o $@ $< 
 
 
 clean:

@@ -7,6 +7,7 @@
 
 #include "client.h"
 #include "common/errorcodes.h"
+#include "common/passfd.h"
 
 LogContext log_ctx;
 int        data_sock;
@@ -16,8 +17,10 @@ int main() {
     int         ret;
     char        w_buffer[BUFFER_SIZE];
     char        r_buffer[BUFFER_SIZE];
+    char        fr_buffer[BUFFER_SIZE];
     int         read_bytes;
     int         write_bytes;
+    int         received_fd;
     sockaddr_un name;
 
 
@@ -45,10 +48,10 @@ int main() {
         scanf("%s", w_buffer);
 
         if ( strcmp(w_buffer, "exit") == 0 ) {
+            write(data_sock, "exit", 4);
             graceful_exit("closing on request\n", 0);
-        }
-
-
+        } 
+        
         write_bytes = write( data_sock, w_buffer, sizeof(w_buffer) );
         if ( write_bytes == -1 ) {
             log_error(&log_ctx, "error writing to socket\nTry again\n");
@@ -56,6 +59,31 @@ int main() {
             fflush(stdout);
             fflush(stderr);
         }
+
+
+        if ( strncmp(w_buffer, "GETFD", 5) == 0 ) {
+            received_fd = recv_fd(data_sock);
+            if( received_fd < 0 ) {
+                log_error(&log_ctx, "error recv fd\n");
+                perror("error recv fd\n");
+                fflush(stdout);
+                fflush(stderr);
+                continue;
+            }
+
+            while( (read_bytes = read(received_fd, fr_buffer, sizeof(fr_buffer) - 1)) > 0 ) {
+                fr_buffer[read_bytes] = '\0';
+                printf("%s", fr_buffer);
+            }
+
+            if ( read_bytes < 0 ) {
+                perror("read\n");
+            }
+
+            close(received_fd);
+            continue;
+        }
+
 
         read_bytes = read( data_sock, r_buffer, sizeof(r_buffer) );
         if ( read_bytes == -1 ) {

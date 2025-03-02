@@ -1,9 +1,10 @@
-#include <sys/socket.h>
+#include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <sys/epoll.h>
+#include <sys/socket.h>
 
 #include "server.h"
 #include "common/connection.h"

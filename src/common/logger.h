@@ -10,12 +10,11 @@
 
 #define LOG_LEVEL_ACTIVE LOG_LEVEL_INFO
 
-#include<stdio.h>
-
 struct LogContext {
     int log_level;
     int outfd; // for stdout 
     int errfd; // for stderr
+    int isStdLogger; // if output is to std stream
 };
 
 void log_info(struct LogContext* ctx, char* msg);
