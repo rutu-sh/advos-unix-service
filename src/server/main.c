@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include <sys/socket.h>
 
 #include "server.h"
@@ -115,7 +116,7 @@ int main() {
                         epoll_ctl(epoll_fd, EPOLL_CTL_DEL, event_fd, NULL);
                     }
 
-                    printf("\nclient fd %d> %s", event_fd, buffer);
+                    printf("client fd %d> %s\n", event_fd, buffer);
                     fflush(stdout);
                     fflush(stderr);
                 }

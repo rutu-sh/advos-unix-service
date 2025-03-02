@@ -6,29 +6,34 @@
 #include <sys/epoll.h>
 
 #include "server.h"
-#include "connection.h"
+#include "common/connection.h"
 #include "common/errorcodes.h"
 
 
 void init() {
     memset(connections, -1, sizeof(connections));
     get_std_logger(&log_ctx);
+    conn_sock = -1;
 }
 
 
 void graceful_exit(char* msg, int err_code) {
+
+    char print_buffer[256];
+
     log_info(&log_ctx, "graceful exit called\n");
 
-    log_info(&log_ctx, "closing connections\n");
-    for(int i=0; i< MAX_CONNECTIONS; i++){
-        if ( connections[i] != -1 ) {
-            close(connections[i]);
-        }
+    if ( conn_sock != -1 ) {
+        log_info(&log_ctx, "closing data socket\n");
+        close(conn_sock);
     }
 
-    close(conn_sock);
-    unlink(SOCKET_NAME);
+    sprintf(print_buffer, "exiting - %d: %s", err_code, msg);
+
+    log_error(&log_ctx, print_buffer);
+    log_info(&log_ctx, print_buffer);
     log_info(&log_ctx, "exiting\n");
+
     exit(err_code);
 }
 
@@ -57,7 +62,7 @@ int bind_connection_socket(int conn_sock, sockaddr_un* name){
     }
     log_info(&log_ctx, "binding socket to address\n");
 
-    memset(&name, 0, sizeof(*name));
+    memset(name, 0, sizeof(*name));
     name->sun_family = AF_UNIX;
     strncpy(name->sun_path, SOCKET_NAME, sizeof(name->sun_path) - 1);
 

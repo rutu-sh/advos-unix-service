@@ -15,6 +15,9 @@
         "parser.h": "c",
         "epoll.h": "c",
         "string.h": "c",
-        "errorcodes.h": "c"
+        "errorcodes.h": "c",
+        "server.h": "c",
+        "connection.h": "c",
+        "client.h": "c"
     }
 }

@@ -1,9 +1,10 @@
 #include "logger.h"
 
-#include<stdio.h>
-#include<string.h>
-#include<unistd.h>
-#include<fcntl.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <stdlib.h>
 
 
 void log_info(struct LogContext* ctx, char* msg) {
