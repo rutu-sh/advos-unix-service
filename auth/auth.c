@@ -1,4 +1,9 @@
 #include "auth.h"
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <sys/un.h>  
+#include <unistd.h>
+#include <stdio.h>
 
 struct ucred get_client_credentials(int client_fd) {
     struct ucred creds;

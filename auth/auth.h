@@ -6,6 +6,14 @@
 #include <unistd.h>
 #include <stdio.h>
 
+
+
+struct ucred {  
+    pid_t pid;
+    uid_t uid;
+    gid_t gid;
+};
+
 struct ucred get_client_credentials(int client_fd);
 int is_client_authorized(int client_fd);
 
