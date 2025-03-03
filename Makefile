@@ -8,28 +8,46 @@ SRC_DIR = src
 SERVER_SRC = $(SRC_DIR)/server
 CLIENT_SRC = $(SRC_DIR)/client
 COMMON_SRC = $(SRC_DIR)/common
-TEST_SRC   = $(SRC_DIR)/test
+TEST_SRC   = tests
 INCLUDES = -I$(SRC_DIR)
 
-
-TESTS = $(shell find $(TEST_SRC) -type f -name *.c)
-
-SERVER_DEPS = $(SERVER_SRC) $(COMMON_SRC)
-CLIENT_DEPS = $(CLIENT_SRC) $(COMMON_SRC)
-TEST_DEPS   = $(COMMON_SRC) # $(SERVER_SRC) $(CLIENT_SRC)
+# project 
+COMMON_DEPS = $(COMMON_SRC)
+SERVER_DEPS = $(SERVER_SRC) $(COMMON_DEPS)
+CLIENT_DEPS = $(CLIENT_SRC) $(COMMON_DEPS)
 
 SERVER_SOURCES = $(shell find $(SERVER_DEPS) -type f -name *.c)
 CLIENT_SOURCES = $(shell find $(CLIENT_DEPS) -type f -name *.c)
-TEST_SOURCES   = $(shell find $(TEST_DEPS)   -type f -name *.c ! -name main.c)
-
-SERVER_OBJECTS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SERVER_SOURCES))
-CLIENT_OBJECTS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(CLIENT_SOURCES))
-TEST_OBJECTS   = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(TEST_SOURCES))
 
 SERVER_TARGET = server.out
 CLIENT_TARGET = client.out
-TEST_TARGETS  = $(TESTS:.c=.out)
 
+SERVER_OBJECTS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SERVER_SOURCES))
+CLIENT_OBJECTS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(CLIENT_SOURCES))
+
+# test
+COMMON_TESTS = $(shell find $(TEST_SRC) -type f -name common_*.c)
+SERVER_TESTS = $(shell find $(TEST_SRC) -type f -name server_*.c)
+CLIENT_TESTS = $(shell find $(TEST_SRC) -type f -name client_*.c)
+
+COMMON_TEST_DEPS = $(COMMON_TESTS) $(COMMON_DEPS) 
+SERVER_TEST_DEPS = $(SERVER_TESTS) $(SERVER_DEPS)
+CLIENT_TEST_DEPS = $(CLIENT_TESTS) $(CLIENT_DEPS)
+
+COMMON_TEST_SOURCES   = $(shell find $(COMMON_TEST_DEPS)   -type f -name *.c ! -name main.c)
+SERVER_TEST_SOURCES   = $(shell find $(SERVER_TEST_DEPS)   -type f -name *.c ! -name main.c)
+CLIENT_TEST_SOURCES   = $(shell find $(CLIENT_TEST_DEPS)   -type f -name *.c ! -name main.c)
+
+COMMON_TEST_OBJECTS   = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(COMMON_TEST_SOURCES))
+SERVER_TEST_OBJECTS   = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SERVER_TEST_SOURCES))
+CLIENT_TEST_OBJECTS   = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(CLIENT_TEST_SOURCES))
+
+COMMON_TEST_TARGETS = $(COMMON_TESTS:.c=.out)
+SERVER_TEST_TARGETS = $(SERVER_TESTS:.c=.out)
+CLIENT_TEST_TARGETS = $(CLIENT_TESTS:.c=.out)
+
+
+# project build targets
 all: clean $(SERVER_TARGET) $(CLIENT_TARGET)
 
 $(SERVER_TARGET): $(SERVER_OBJECTS)
@@ -38,22 +56,26 @@ $(SERVER_TARGET): $(SERVER_OBJECTS)
 $(CLIENT_TARGET): $(CLIENT_OBJECTS)
 	$(CC) $(CFLAGS) -o $@ $^
 
-$(TEST_SRC)/%.out: $(BUILD_DIR)/test/%.o $(TEST_OBJECTS)
-	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -o $@ $^
-
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c -o $@ $< 
 
-$(BUILD_DIR)/test/%.o: $(SRC_DIR)/test/%.c
+# tests build targets
+$(COMMON_TEST_TARGETS): $(COMMON_TEST_OBJECTS)
+	$(CC) $(CFLAGS) -o $@ $^
+
+$(SERVER_TEST_TARGETS): $(SERVER_TEST_OBJECTS)
+	$(CC) $(CFLAGS) -o $@ $^
+
+$(CLIENT_TEST_TARGETS): $(CLIENT_TEST_OBJECTS)
+	$(CC) $(CFLAGS) -o $@ $^
+
+$(BUILD_DIR)/tests/%.o: $(TEST_SRC)/%.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c -o $@ $< 
 
-test: clean $(TEST_TARGETS)
+test: clean $(COMMON_TEST_TARGETS) $(SERVER_TEST_TARGETS) $(CLIENT_TEST_TARGETS)
 
-
+# cleanup
 clean:
-	@echo $(TEST_OBJECTS)
-	@echo $(TEST_TARGETS)
-	@rm -rf .build server.out client.out src/test/*.out
+	@rm -rf .build server.out client.out tests/*.out tests/*.o tests/*.d
