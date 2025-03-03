@@ -1,8 +1,11 @@
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
 #include <sys/socket.h>
 
 #include "server.h"
+#include "common/passfd.h"
 #include "common/errorcodes.h"
 
 
@@ -23,8 +26,8 @@ int main() {
     int         event_fd;
     int         read_bytes;
     int         write_bytes;
+    int         fd_file;
     sockaddr_un name;
-    
 
     init();
 
@@ -105,9 +108,33 @@ int main() {
                     close(event_fd);
                     epoll_ctl(epoll_fd, EPOLL_CTL_DEL, event_fd, NULL);
                 } else {
-                    buffer[sizeof(buffer) - 1] = 0;
+                    buffer[read_bytes] = 0;
 
-                    write_bytes = write(event_fd, buffer, sizeof(buffer));
+                    if ( strncmp(buffer, "GETFD", 5)  == 0 ) {
+                        fd_file = open("./testfile.txt", O_RDONLY);
+                        if( fd_file < 0 ) {
+                            log_error(&log_ctx, "file open error\n");
+                            perror("file open error\n");
+                        } else {
+                            log_info(&log_ctx, "sending file descriptor for testfile.txt to client");
+                            if ( send_fd(event_fd, fd_file) < 0 ) {
+                                log_error(&log_ctx, "error sending file descriptor\n");
+                                perror("error sending file descriptor\n");
+                                close(fd_file);
+                                fflush(stdout);
+                                fflush(stderr);
+                                strcpy(buffer, "err reading\n");
+                            } else {
+                                close(fd_file);
+                                continue;
+                            }
+                        }
+                    } else if ( strncmp(buffer, "EXIT", 4) == 0 ) {
+                        close(event_fd);
+                        epoll_ctl(epoll_fd, EPOLL_CTL_DEL, event_fd, NULL);
+                    }
+
+                    write_bytes = write(event_fd, buffer, read_bytes);
                     if ( write_bytes == -1 ) {
                         log_error(&log_ctx, "write error\n");
                         perror("write\n");
@@ -115,7 +142,7 @@ int main() {
                         epoll_ctl(epoll_fd, EPOLL_CTL_DEL, event_fd, NULL);
                     }
 
-                    printf("\nclient fd %d> %s", event_fd, buffer);
+                    printf("client fd %d> %s\n", event_fd, buffer);
                     fflush(stdout);
                     fflush(stderr);
                 }
