@@ -1,8 +1,12 @@
 #include "common/logger.h"
+#include "common/connection.h"
+#include "client/client.h"
 
 #include <stdio.h>
 #include <assert.h>
 
+LogContext log_ctx;
+int        data_sock;
 
 int test_std_logger() {
     struct LogContext log_ctx;
