@@ -112,8 +112,10 @@ int main() {
                 } else {
                     buffer[read_bytes] = 0;
 
-                    do_op(epoll_fd, event_fd, &connections[idx], buffer);
-
+                    if (do_op(epoll_fd, event_fd, &connections[idx], buffer) < 0) {
+                        log_error(&log_ctx, "error doing operation\n");
+                        perror("error doing operation\n");
+                    }
                 }
             }
 
