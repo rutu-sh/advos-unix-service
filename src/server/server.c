@@ -150,13 +150,14 @@ int do_op(int epoll_fd, int event_fd, client_inst_t* client, char* buffer) {
                     log_info(&log_ctx, "found resource\n");
 
                     // ask client for resource fd
-                    char* cl_mess = strcat("REQ ", connections[i].resource);
-                    if (write(connections[i].client_fd, cl_mess, sizeof(cl_mess)) < 0) {
+                    char* cl_mess = "REQ ";
+                    cl_mess = strcat(cl_mess, connections[i].resource);
+                    if (write(connections[i].client_fd, cl_mess, strlen(cl_mess)) < 0) {
                         log_error(&log_ctx, "error sending REQ message to client\n");
                         perror("error sending REQ message to client\n");
                         return -1;
                     }
-                    
+
                     int resource_fd = recv_fd(connections[i].client_fd);
                     if (resource_fd < 0) {
                         log_error(&log_ctx, "error receiving resource fd\n");
@@ -191,11 +192,11 @@ int do_op(int epoll_fd, int event_fd, client_inst_t* client, char* buffer) {
         close(event_fd);
         epoll_ctl(epoll_fd, EPOLL_CTL_DEL, event_fd, NULL);
 
-    } else {
-        log_error(&log_ctx, "invalid message from client\n");
-        perror("invalid message from client\n");
-        return -1;
     }
+    
+    log_error(&log_ctx, "invalid message from client\n");
+    perror("invalid message from client\n");
+    return -1;
 }
 
 char* get_resource_from_message(const char* mes, const char* prefix) {

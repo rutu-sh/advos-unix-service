@@ -25,8 +25,8 @@ int main() {
     int         idx;
     int         event_fd;
     int         read_bytes;
-    int         write_bytes;
-    int         fd_file;
+    // int         write_bytes;
+    // int         fd_file;
     sockaddr_un name;
 
     init();
