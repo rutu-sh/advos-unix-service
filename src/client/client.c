@@ -65,13 +65,25 @@ int create_epoll_fd() {
 
 
 char* get_resource_from_message(const char* mes, const char* prefix) {
+    char* rest;
     if (strncmp(mes, prefix, strlen(prefix)) == 0) {
-        char* rest = strchr(mes, ' ');
-        if (rest != NULL) {
-            return rest + 1;
+        rest = strchr(mes, ' ');
+        if (rest == NULL) {
+            return NULL;
         }
     }
-    return NULL;
+
+    // remove annoying newline char
+    char *temp = rest + 1;
+    while (*temp != '\0') {
+        if (*temp == '\n') {
+            *temp = '\0';
+            break;
+        }
+        temp++;
+    }
+
+    return rest + 1;
 }
 
 void set_nonblocking(int fd) {
