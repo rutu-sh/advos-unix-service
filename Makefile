@@ -56,7 +56,6 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 compile_common_tests: $(COMMON_TEST_OBJECTS)
 	@for target in $(COMMON_TESTS); do \
 		target_obj=$$(echo $$target | sed 's/\.c$$/.out/'); \
-		echo $(COMMON_TEST_OBJECTS); \
 		$(CC) $(CFLAGS) -o $$target_obj $$target $(COMMON_TEST_OBJECTS); \
 	done
 
@@ -64,7 +63,6 @@ compile_common_tests: $(COMMON_TEST_OBJECTS)
 compile_server_tests: $(SERVER_TEST_OBJECTS)
 	@for target in $(SERVER_TESTS); do \
 		target_obj=$$(echo $$target | sed 's/\.c$$/.out/'); \
-		echo $(SERVER_TEST_OBJECTS); \
 		$(CC) $(CFLAGS) -o $$target_obj $$target $(SERVER_TEST_OBJECTS); \
 	done
 
@@ -72,7 +70,6 @@ compile_server_tests: $(SERVER_TEST_OBJECTS)
 compile_client_tests: $(CLIENT_TEST_OBJECTS)
 	@for target in $(CLIENT_TESTS); do \
 		target_obj=$$(echo $$target | sed 's/\.c$$/.out/'); \
-		echo $(CLIENT_TEST_OBJECTS); \
 		$(CC) $(CFLAGS) -o $$target_obj $$target $(CLIENT_TEST_OBJECTS); \
 	done
 
@@ -82,6 +79,9 @@ $(BUILD_DIR)/tests/%.o: $(TEST_SRC)/%.c
 	$(CC) $(CFLAGS) -c -o $@ $< 
 
 test: clean compile_common_tests compile_server_tests compile_client_tests
+	@ echo "---------RUNNING TESTS---------" && \
+	./run_tests.sh && \
+	echo "---------FINISHED TESTS---------"
 
 # cleanup
 clean:

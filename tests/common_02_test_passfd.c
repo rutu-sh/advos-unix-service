@@ -90,9 +90,9 @@ int main() {
     
     ut_name = "test_send_recv_fd";
     if (test_send_recv_fd() != 0) {
-        printf("test:%s:\033[1;33m%s\033[0m:\033[31mFAILED\033[0m\n", ut_name, ut_name);
+        printf("test:%s:\033[1;33m%s\033[0m:\033[31mFAILED\033[0m\n", test_name, ut_name);
     } else {
-        printf("test:%s:\033[1;33m%s\033[0m:\033[32mPASSED\033[0m\n", ut_name, ut_name);       
+        printf("test:%s:\033[1;33m%s\033[0m:\033[32mPASSED\033[0m\n", test_name, ut_name);       
     }
 
     return EXIT_SUCCESS;
