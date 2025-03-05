@@ -163,13 +163,19 @@ int do_op(int epoll_fd, int event_fd, client_inst_t* client, char* buffer) {
                         perror("error sending resource fd\n");
                         return -1;
                     }
+
+                    // success
+                    log_info(&log_ctx, "sent resource to client\n");
+                    close(resource_fd);
+                    return 0;
                 }
             }
         }
-        log_info(&log_ctx, "closing fd\n");
-        close(event_fd);
-        epoll_ctl(epoll_fd, EPOLL_CTL_DEL, event_fd, NULL);
-        return 1;
+
+        // resource not found
+        log_info(&log_ctx, "resource not found\n");
+        send_fd(client->client_fd, -1);
+        return 0;
     }
 
     else if ( strncmp(buffer, "exit", 4) == 0 ) {
@@ -189,7 +195,7 @@ char* get_resource_from_message(const char* mes, const char* prefix) {
     if (strncmp(mes, prefix, strlen(prefix)) == 0) {
         char* rest = strchr(mes, ' ');
         if (rest != NULL) {
-            return rest + 1; // Skip the space
+            return rest + 1;
         }
     }
     return NULL;

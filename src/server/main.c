@@ -111,7 +111,7 @@ int main() {
                     epoll_ctl(epoll_fd, EPOLL_CTL_DEL, event_fd, NULL);
                 } else {
                     buffer[read_bytes] = 0;
-
+                                  
                     if (do_op(epoll_fd, event_fd, &connections[idx], buffer) < 0) {
                         log_error(&log_ctx, "error doing operation\n");
                         perror("error doing operation\n");
