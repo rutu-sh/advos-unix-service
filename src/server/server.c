@@ -7,12 +7,18 @@
 #include <sys/socket.h>
 
 #include "server.h"
+#include "common/passfd.h"
 #include "common/connection.h"
 #include "common/errorcodes.h"
 
 
 void init() {
-    memset(connections, -1, sizeof(connections));
+    
+    // init empty clients
+    for (int i = 0; i < MAX_CONNECTIONS; i++) {
+        connections[i].client_fd = -1;
+    }
+
     get_std_logger(&log_ctx);
     conn_sock = -1;
 }
@@ -91,7 +97,7 @@ int create_epoll_fd() {
 
 int find_next_available_conn_idx() {
     for(int i=0; i< MAX_CONNECTIONS; i++){
-        if ( connections[i] == -1 ) {
+        if ( connections[i].client_fd == -1 ) {
             return i;
         }
     }
@@ -109,4 +115,82 @@ void set_nonblocking(int fd) {
         perror("fcntl F_SETFL O_NONBLOCK");
         exit(EXIT_FAILURE);
     }
+}
+
+int do_op(int epoll_fd, int event_fd, client_inst_t* client, char* buffer) {
+
+    // PUB <resource>
+    if ( strncmp(buffer, "PUB", 3)  == 0 ) {
+        strcpy(client->resource, get_resource_from_message(buffer, "PUB"));
+        if (client->resource == NULL) {
+            log_error(&log_ctx, "error getting resource from client message\n");
+            perror("error reading resource\n");
+            return -1;
+        }
+        log_info(&log_ctx, "client published resource: ");
+        log_info(&log_ctx, client->resource);
+        return 0;
+    } 
+
+    // REQ <resource>
+    else if ( strncmp(buffer, "REQ", 3) == 0 ) {
+        char *file_needed = get_resource_from_message(buffer, "REQ");
+        if (file_needed == NULL) {
+            log_error(&log_ctx, "error getting resource from client message\n");
+            perror("error reading resource\n");
+            return -1;
+        }
+
+        // loop through all clients and check if they have the resource
+        for (int i = 0; i < MAX_CONNECTIONS; i++) {
+            if (connections[i].client_fd != -1) {
+                if (strcmp(connections[i].resource, file_needed) == 0) {
+
+                    // found the resource
+                    log_info(&log_ctx, "found resource\n");
+
+                    // ask client for resource fd
+                    int resource_fd = recv_fd(connections[i].client_fd);
+                    if (resource_fd < 0) {
+                        log_error(&log_ctx, "error receiving resource fd\n");
+                        perror("error receiving resource fd\n");
+                        return -1;
+                    }
+
+                    // send to client
+                    if (send_fd(client->client_fd, resource_fd) < 0) {
+                        log_error(&log_ctx, "error sending resource fd\n");
+                        perror("error sending resource fd\n");
+                        return -1;
+                    }
+                }
+            }
+        }
+        log_info(&log_ctx, "closing fd\n");
+        close(event_fd);
+        epoll_ctl(epoll_fd, EPOLL_CTL_DEL, event_fd, NULL);
+        return 1;
+    }
+
+    else if ( strncmp(buffer, "exit", 4) == 0 ) {
+                        
+        log_info(&log_ctx, "closing fd\n");
+        close(event_fd);
+        epoll_ctl(epoll_fd, EPOLL_CTL_DEL, event_fd, NULL);
+
+    } else {
+        log_error(&log_ctx, "invalid message from client\n");
+        perror("invalid message from client\n");
+        return -1;
+    }
+}
+
+char* get_resource_from_message(const char* mes, const char* prefix) {
+    if (strncmp(mes, prefix, strlen(prefix)) == 0) {
+        char* rest = strchr(mes, ' ');
+        if (rest != NULL) {
+            return rest + 1; // Skip the space
+        }
+    }
+    return NULL;
 }

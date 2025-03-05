@@ -9,7 +9,7 @@
 #include "common/errorcodes.h"
 
 
-int connections[MAX_CONNECTIONS];
+client_inst_t connections[MAX_CONNECTIONS];
 char buffer[BUFFER_SIZE];
 LogContext log_ctx;
 epoll_event ev;
@@ -64,6 +64,8 @@ int main() {
         if ( no_fds == -1 ) {
             log_error(&log_ctx, "epoll wait error");
             graceful_exit("err epoll wait\n", ERROR_SERVER_EPOLL_WAIT);
+            fflush(stdout);
+            fflush(stderr);
         }
 
         for( int i=0; i< no_fds; i++ ) {
@@ -74,13 +76,13 @@ int main() {
                 while ( (client_fd = accept(conn_sock, NULL, NULL)) != -1 ) {
 
                     idx = find_next_available_conn_idx();
-                    if ( idx < 0 ) {
+                    if ( idx == -1 ) {
                         log_error(&log_ctx, "cannot accept any new connections\n");
                         close(client_fd);
                         break;
                     }
     
-                    connections[idx] = client_fd;
+                    connections[idx].client_fd = client_fd;
                     set_nonblocking(client_fd);
     
                     ev.events = EPOLLIN | EPOLLET;
@@ -97,7 +99,7 @@ int main() {
                 // events on any of the other sockets
                 read_bytes = read(event_fd, buffer, sizeof(buffer));
                 if ( read_bytes == 0 ) {
-                    // client hug up?
+                    // client hung up?
                     log_error(&log_ctx, "client disconnected\n");
                     perror("client disconnected\n");
                     close(event_fd);
@@ -110,41 +112,8 @@ int main() {
                 } else {
                     buffer[read_bytes] = 0;
 
-                    if ( strncmp(buffer, "GETFD", 5)  == 0 ) {
-                        fd_file = open("./testfile.txt", O_RDONLY);
-                        if( fd_file < 0 ) {
-                            log_error(&log_ctx, "file open error\n");
-                            perror("file open error\n");
-                        } else {
-                            log_info(&log_ctx, "sending file descriptor for testfile.txt to client");
-                            if ( send_fd(event_fd, fd_file) < 0 ) {
-                                log_error(&log_ctx, "error sending file descriptor\n");
-                                perror("error sending file descriptor\n");
-                                close(fd_file);
-                                fflush(stdout);
-                                fflush(stderr);
-                                strcpy(buffer, "err reading\n");
-                            } else {
-                                close(fd_file);
-                                continue;
-                            }
-                        }
-                    } else if ( strncmp(buffer, "EXIT", 4) == 0 ) {
-                        close(event_fd);
-                        epoll_ctl(epoll_fd, EPOLL_CTL_DEL, event_fd, NULL);
-                    }
+                    do_op(epoll_fd, event_fd, &connections[idx], buffer);
 
-                    write_bytes = write(event_fd, buffer, read_bytes);
-                    if ( write_bytes == -1 ) {
-                        log_error(&log_ctx, "write error\n");
-                        perror("write\n");
-                        close(event_fd);
-                        epoll_ctl(epoll_fd, EPOLL_CTL_DEL, event_fd, NULL);
-                    }
-
-                    printf("client fd %d> %s\n", event_fd, buffer);
-                    fflush(stdout);
-                    fflush(stderr);
                 }
             }
 

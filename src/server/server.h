@@ -15,7 +15,12 @@ typedef struct sockaddr_un sockaddr_un;
 typedef struct sockaddr sockaddr;
 typedef struct LogContext LogContext;
 
-extern int connections[MAX_CONNECTIONS];
+typedef struct client_inst {
+    int client_fd;
+    char resource[256];
+} client_inst_t;
+
+extern client_inst_t connections[MAX_CONNECTIONS];
 extern char buffer[BUFFER_SIZE];
 extern LogContext log_ctx;
 extern epoll_event ev;
@@ -53,9 +58,18 @@ int create_epoll_fd();
 int find_next_available_conn_idx();
 
 /*
+    UTIL: get the resource filename from the message
+*/
+char* get_resource_from_message(const char* mes, const char* prefix);
+
+/*
+    Perform the operation requested by the client based on protocol message
+*/
+int do_op(int epoll_fd, int event_fd, client_inst_t* client, char* buffer);
+
+/*
     Initialize the server
 */
 void init();
-
 
 #endif // UNIX_SERVER_H
