@@ -92,6 +92,8 @@ int main() {
                         continue;
                     }
 
+                    track_client_resources(client_fd);
+
                     set_nonblocking(client_fd);
 
                     // add new client to epoll
@@ -115,7 +117,9 @@ int main() {
                 if (r == 0) {
                     // no bytes read bruh, client hung up?
                     printf("client disconn\n");
+                    print_client_usage(fd);
                     perror("fd: %d client disconn\n");
+                    
                     close(fd);
                     epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL);
                 } else if (r == -1) {

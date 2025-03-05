@@ -3,10 +3,13 @@
 
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/un.h>
 #include <unistd.h>
-#include <stdio.h>
+#include <syslog.h>
+#include <sys/resource.h>
 
-
+#define INVALID_UID ((uid_t)UINT_MAX)   
+#define ALLOWED_UID 1000 
 
 struct ucred {  
     pid_t pid;
