@@ -23,7 +23,7 @@ int test_std_logger_init() {
 
 int test_std_log_info() {
     char buf[30];
-    const char* ut_name = "test_std_log_info";
+    const char* ut_name = "test_std_log";
     struct LogContext log_ctx;
     int read_bytes; 
     get_std_logger(&log_ctx);
