@@ -83,11 +83,12 @@ int main() {
                     }
     
                     connections[idx].client_fd = client_fd;
-                    set_nonblocking(client_fd);
+                    // set_nonblocking(client_fd);
     
                     ev.events = EPOLLIN | EPOLLET;
                     ev.data.fd = client_fd;
-    
+
+                    log_info(&log_ctx, "accepted new connection\n");
     
                     if ( epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &ev) == -1 ) {
                         log_error(&log_ctx, "epoll_ctl error\n");
@@ -97,7 +98,9 @@ int main() {
             } else if ( all_events[i].events & EPOLLIN ){
 
                 // events on any of the other sockets
+                log_info(&log_ctx, "event on client fd\n");
                 read_bytes = read(event_fd, buffer, sizeof(buffer));
+
                 if ( read_bytes == 0 ) {
                     // client hung up?
                     log_error(&log_ctx, "client disconnected\n");
@@ -111,7 +114,8 @@ int main() {
                     epoll_ctl(epoll_fd, EPOLL_CTL_DEL, event_fd, NULL);
                 } else {
                     buffer[read_bytes] = 0;
-                                  
+
+                    // do operation based on protocol
                     if (do_op(epoll_fd, event_fd, &connections[idx], buffer) < 0) {
                         log_error(&log_ctx, "error doing operation\n");
                         perror("error doing operation\n");
