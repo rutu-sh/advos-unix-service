@@ -21,7 +21,7 @@ int test_std_logger_init() {
     return 0;
 }
 
-int test_std_log_info() {
+int test_std_log_msg() {
     char buf[30];
     const char* ut_name = "test_std_log";
     struct LogContext log_ctx;
@@ -55,7 +55,6 @@ int test_std_log_info() {
     buf[read_bytes] = 0;
     assert(strcmp(buf, "[warning] hello") == 0);
 
-
     close(out_pipe[0]);
     close(out_pipe[1]);
     printf("test:%s:\033[1;33m%s\033[0m:\033[32mPASSED\033[0m\n", ut_name, ut_name);
@@ -66,5 +65,5 @@ int test_std_log_info() {
 
 int main() {
     test_std_logger_init();
-    test_std_log_info();
+    test_std_log_msg();
 }
