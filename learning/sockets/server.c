@@ -122,11 +122,13 @@ int main() {
                     
                     close(fd);
                     epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL);
+                    continue;
                 } else if (r == -1) {
                     // client err
                     perror("fd: %d client err\n");
                     close(fd);
                     epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL);
+                    continue;
                 } else {
                     buffer[r] = '\0';
                     if (strncmp(buffer, "GETFD", 5) == 0) {

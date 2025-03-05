@@ -8,7 +8,7 @@
 #include <syslog.h>
 #include <sys/resource.h>
 
-#define INVALID_UID ((uid_t)UINT_MAX)   
+#define INVALID_UID ((uid_t)-1U)   
 #define ALLOWED_UID 1000 
 
 struct ucred {  
@@ -19,5 +19,7 @@ struct ucred {
 
 struct ucred get_client_credentials(int client_fd);
 int is_client_authorized(int client_fd);
+void track_client_resources(int client_fd);
+void print_client_usage(int client_fd);
 
 #endif // AUTH_H

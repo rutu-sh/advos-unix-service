@@ -10,7 +10,7 @@
 #include <sys/resource.h>
 #include <time.h>
 
-#define INVALID_UID ((uid_t)UINT_MAX)   
+#define INVALID_UID ((uid_t)-1U)   
 #define ALLOWED_UID 1000 
 #define MAX_CONNECTIONS 10  
 
@@ -85,7 +85,15 @@ int is_client_authorized(int client_fd) {
 }
 
 // Prints authorization statistics
-void print_auth_stats() {
-    printf("Auth Stats - Total Attempts: %d, Authorized: %d, Rejected: %d\n",
-           total_attempts, authorized_clients, rejected_clients);
+void print_client_usage(int client_fd) {
+    struct ucred creds = get_client_credentials(client_fd);
+    if (creds.uid == INVALID_UID) return;
+
+    struct rusage usage;
+    if (getrusage(RUSAGE_SELF, &usage) == 0) {
+        printf("Client PID %d disconnected. Final Resource Usage: CPU time (user): %ld sec, Memory: %ld KB\n",
+               creds.pid, usage.ru_utime.tv_sec, usage.ru_maxrss);
+    } else {
+        fprintf(stderr, "Error: Failed to get resource usage for client PID %d: %s\n", creds.pid, strerror(errno));
+    }
 }
