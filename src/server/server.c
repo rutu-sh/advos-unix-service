@@ -119,15 +119,20 @@ void set_nonblocking(int fd) {
 
 int do_op(int epoll_fd, int event_fd, client_inst_t* client, char* buffer) {
 
+    printf("buffer: %s\n", buffer);
+
     // PUB <resource>
     if ( strncmp(buffer, "PUB", 3)  == 0 ) {
+        memset(client->resource, 0, sizeof(client->resource));
         strcpy(client->resource, get_resource_from_message(buffer, "PUB"));
+
         if (client->resource == NULL) {
             log_error(&log_ctx, "error getting resource from client message\n");
             perror("error reading resource\n");
             return -1;
         }
         log_info(&log_ctx, "client published resource: \n");
+        printf("client published resource: %s\n", client->resource);
         return 0;
     }
 
@@ -149,14 +154,18 @@ int do_op(int epoll_fd, int event_fd, client_inst_t* client, char* buffer) {
                     log_info(&log_ctx, "found resource\n");
 
                     // ask client for resource fd
-                    char cl_mess[256] = "REQ ";
+                    char cl_mess[256] = "REQ_";
                     strcat(cl_mess, connections[i].resource);
+
+                    printf("sending REQ message to client\n");
 
                     if (write(connections[i].client_fd, cl_mess, sizeof(cl_mess)) < 0) {
                         log_error(&log_ctx, "error sending REQ message to client\n");
                         perror("error sending REQ message to client\n");
                         return -1;
                     }
+
+                    printf("sent REQ message to client\n");
 
                     int resource_fd = recv_fd(connections[i].client_fd);
                     if (resource_fd < 0) {
@@ -201,7 +210,7 @@ int do_op(int epoll_fd, int event_fd, client_inst_t* client, char* buffer) {
 
 char* get_resource_from_message(const char* mes, const char* prefix) {
     if (strncmp(mes, prefix, strlen(prefix)) == 0) {
-        char* rest = strchr(mes, ' ');
+        char* rest = strchr(mes, '_');
         if (rest != NULL) {
             return rest + 1;
         }

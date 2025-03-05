@@ -67,7 +67,7 @@ int create_epoll_fd() {
 char* get_resource_from_message(const char* mes, const char* prefix) {
     char* rest;
     if (strncmp(mes, prefix, strlen(prefix)) == 0) {
-        rest = strchr(mes, ' ');
+        rest = strchr(mes, '_');
         if (rest == NULL) {
             return NULL;
         }

@@ -27,7 +27,7 @@ int main() {
     int         epoll_fd;
     int         nfds;
     sockaddr_un name;
-    struct epoll_event ev, events[MAX_EVENTS];
+    struct epoll_event ev, ev2, events[MAX_EVENTS];
 
     init();
 
@@ -49,6 +49,8 @@ int main() {
     }
     // set_nonblocking(data_sock);
     set_nonblocking(STDIN_FILENO);
+
+    // add data socket to epoll
     epoll_fd = create_epoll_fd();
     ev.events = EPOLLIN;
     ev.data.fd = data_sock;
@@ -56,21 +58,34 @@ int main() {
         log_error(&log_ctx, "error epoll_ctl\n");
         graceful_exit("error epoll_ctl\n", ERROR_CLIENT_EPOLL_CTL);
     }
+
+    // add stdin to epoll
+    ev2.events = EPOLLIN;
+    ev2.data.fd = STDIN_FILENO;
+    if ( epoll_ctl(epoll_fd, EPOLL_CTL_ADD, STDIN_FILENO, &ev2) == -1 ) {
+        log_error(&log_ctx, "error epoll_ctl\n");
+        graceful_exit("error epoll_ctl\n", ERROR_CLIENT_EPOLL_CTL);
+    }
+
     while(1) {
-        nfds  = epoll_wait(epoll_fd, events, MAX_EVENTS, 1);
+        nfds  = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
         if ( nfds == -1 ) {
             log_error(&log_ctx, "error epoll_wait\n");
             graceful_exit("error epoll_wait\n", ERROR_CLIENT_EPOLL_CTL);
         }
-        if ( nfds == 0) {
+
+        for (int i = 0; i < nfds; i++) {
+
+        if ( events[i].data.fd == STDIN_FILENO ) {
             // printf("\nclient> ");
             memset(w_buffer, 0, sizeof(w_buffer));
-            if(fgets(w_buffer, sizeof(w_buffer), stdin) == NULL) {
+            if(scanf("%s", w_buffer) == -1){
                 continue;
                 // log_error(&log_ctx, "error reading from stdin\n");
                 // graceful_exit("error reading from stdin\n", ERROR_CLIENT_READ_STDIN);
             }
-            
+
+            printf("after scanf, buffer is: %s\n", w_buffer);            
             /*size_t len = strlen(w_buffer);
             if(len > 0 && w_buffer[len-1] == '\n'){
                 w_buffer[len-1] = '\0';
@@ -95,24 +110,19 @@ int main() {
                 char text[256] = "This is ";
                 strcat(text, fname);
                 write(fd, text, sizeof(text));
+                lseek(fd, 0, SEEK_SET);
 
-                write_bytes = write(data_sock, "PUB ", strlen("PUB "));
+                printf("sending message: %s\n", w_buffer);
+
+                write_bytes = write(data_sock, w_buffer, sizeof(w_buffer));
                 if(write_bytes == -1){
                     log_error(&log_ctx, "error writing to socket\n");
                     graceful_exit("error writing to socket\n", 0);
                     close(fd);
                     continue;
                 }
-                write_bytes = write(data_sock, fname, strlen(fname));
-                if(write_bytes == -1){
-                    log_error(&log_ctx, "error writing to socket\n");
-                    graceful_exit("error writing to socket\n", 0);
-                    close(fd);
-                    continue;
-                }
-                close(fd);
             }
-            else if(strncmp(w_buffer, "REQ ", 4) == 0){
+            else if(strncmp(w_buffer, "REQ", 3) == 0){
                 fname=get_resource_from_message(w_buffer, "REQ");
                 if(strlen(fname)==0){
                     printf("Missing filename for REQ command\n");
@@ -150,11 +160,14 @@ int main() {
                 }
             }
         }
-        else{
+        // poll for data on the data socket
+        else if ( events[i].data.fd == data_sock ) {
             log_info(&log_ctx, "waiting for server to ask for file\n");
             for(int i = 0; i<nfds; i++){
                 if(events[i].data.fd == data_sock){
+                    printf("starting read on data socket\n");
                     read_bytes = read(data_sock, r_buffer, sizeof(r_buffer));
+                    printf("read %d bytes\n", read_bytes);
                     if ( read_bytes == -1 ) {
                         log_error(&log_ctx, "error reading from socket\nTry again\n");
                         perror("error reading\n");
@@ -168,7 +181,7 @@ int main() {
                     printf("server> %s\n", r_buffer);
                     r_buffer[read_bytes] = '\0';
 
-                    if(strncmp(r_buffer, "REQ ", 4) == 0){
+                    if(strncmp(r_buffer, "REQ", 3) == 0){
                         char *filename;
                         filename = get_resource_from_message(r_buffer, "REQ");
                         // printf("filename: %s\n", filename);
@@ -192,6 +205,8 @@ int main() {
                 }
             }
         }
+
+    }
 
     }
     // setup signal handler for this 
