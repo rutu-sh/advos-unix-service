@@ -13,7 +13,6 @@ epoll_event ev;
 epoll_event all_events[MAX_CONNECTIONS];
 int conn_sock;
 
-
 int test_std_logger() {
     struct LogContext log_ctx;
     get_std_logger(&log_ctx);

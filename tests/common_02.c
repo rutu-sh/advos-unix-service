@@ -1,17 +1,7 @@
 #include "common/logger.h"
-#include "common/connection.h"
-#include "server/server.h"
 
 #include <stdio.h>
 #include <assert.h>
-
-
-client_inst_t connections[MAX_CONNECTIONS];
-char buffer[BUFFER_SIZE];
-LogContext log_ctx;
-epoll_event ev;
-epoll_event all_events[MAX_CONNECTIONS];
-int conn_sock;
 
 
 int test_std_logger() {

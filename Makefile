@@ -30,21 +30,13 @@ COMMON_TESTS = $(shell find $(TEST_SRC) -type f -name common_*.c)
 SERVER_TESTS = $(shell find $(TEST_SRC) -type f -name server_*.c)
 CLIENT_TESTS = $(shell find $(TEST_SRC) -type f -name client_*.c)
 
-COMMON_TEST_DEPS = $(COMMON_TESTS) $(COMMON_DEPS) 
-SERVER_TEST_DEPS = $(SERVER_TESTS) $(SERVER_DEPS)
-CLIENT_TEST_DEPS = $(CLIENT_TESTS) $(CLIENT_DEPS)
-
-COMMON_TEST_SOURCES   = $(shell find $(COMMON_TEST_DEPS)   -type f -name *.c ! -name main.c)
-SERVER_TEST_SOURCES   = $(shell find $(SERVER_TEST_DEPS)   -type f -name *.c ! -name main.c)
-CLIENT_TEST_SOURCES   = $(shell find $(CLIENT_TEST_DEPS)   -type f -name *.c ! -name main.c)
+COMMON_TEST_SOURCES   = $(shell find $(COMMON_DEPS)   -type f -name *.c ! -name main.c)
+SERVER_TEST_SOURCES   = $(shell find $(SERVER_DEPS)   -type f -name *.c ! -name main.c)
+CLIENT_TEST_SOURCES   = $(shell find $(CLIENT_DEPS)   -type f -name *.c ! -name main.c)
 
 COMMON_TEST_OBJECTS   = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(COMMON_TEST_SOURCES))
 SERVER_TEST_OBJECTS   = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SERVER_TEST_SOURCES))
 CLIENT_TEST_OBJECTS   = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(CLIENT_TEST_SOURCES))
-
-COMMON_TEST_TARGETS = $(COMMON_TESTS:.c=.out)
-SERVER_TEST_TARGETS = $(SERVER_TESTS:.c=.out)
-CLIENT_TEST_TARGETS = $(CLIENT_TESTS:.c=.out)
 
 
 # project build targets
@@ -61,20 +53,35 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c -o $@ $< 
 
 # tests build targets
-$(COMMON_TEST_TARGETS): $(COMMON_TEST_OBJECTS)
-	$(CC) $(CFLAGS) -o $@ $^
+compile_common_tests: $(COMMON_TEST_OBJECTS)
+	@for target in $(COMMON_TESTS); do \
+		target_obj=$$(echo $$target | sed 's/\.c$$/.out/'); \
+		echo $(COMMON_TEST_OBJECTS); \
+		$(CC) $(CFLAGS) -o $$target_obj $$target $(COMMON_TEST_OBJECTS); \
+	done
 
-$(SERVER_TEST_TARGETS): $(SERVER_TEST_OBJECTS)
-	$(CC) $(CFLAGS) -o $@ $^
 
-$(CLIENT_TEST_TARGETS): $(CLIENT_TEST_OBJECTS)
-	$(CC) $(CFLAGS) -o $@ $^
+compile_server_tests: $(SERVER_TEST_OBJECTS)
+	@for target in $(SERVER_TESTS); do \
+		target_obj=$$(echo $$target | sed 's/\.c$$/.out/'); \
+		echo $(SERVER_TEST_OBJECTS); \
+		$(CC) $(CFLAGS) -o $$target_obj $$target $(SERVER_TEST_OBJECTS); \
+	done
+
+
+compile_client_tests: $(CLIENT_TEST_OBJECTS)
+	@for target in $(CLIENT_TESTS); do \
+		target_obj=$$(echo $$target | sed 's/\.c$$/.out/'); \
+		echo $(CLIENT_TEST_OBJECTS); \
+		$(CC) $(CFLAGS) -o $$target_obj $$target $(CLIENT_TEST_OBJECTS); \
+	done
+
 
 $(BUILD_DIR)/tests/%.o: $(TEST_SRC)/%.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c -o $@ $< 
 
-test: clean $(COMMON_TEST_TARGETS) $(SERVER_TEST_TARGETS) $(CLIENT_TEST_TARGETS)
+test: clean compile_common_tests compile_server_tests compile_client_tests
 
 # cleanup
 clean:
