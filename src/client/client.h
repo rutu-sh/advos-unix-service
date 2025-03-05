@@ -29,5 +29,12 @@ int create_data_socket();
 
 
 
+int create_epoll_fd();
+
+
+char* get_resource_from_message(const char* mes, const char* prefix);
+
+
+void set_nonblocking(int fd);
 
 #endif

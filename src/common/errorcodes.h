@@ -7,8 +7,8 @@
 #define ERROR_SERVER_EPOLL_FD_CREATE      1004
 #define ERROR_SERVER_EPOLL_CTL            1005
 #define ERROR_SERVER_EPOLL_WAIT           1006
-
-
+#define ERROR_CLIENT_EPOLL_CTL            1007
+#define ERROR_CLIENT_READ_STDIN           1008
 #define ERROR_CLIENT_DATA_SOCKET_CREATE   2001
 
 #endif

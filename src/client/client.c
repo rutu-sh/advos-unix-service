@@ -53,5 +53,35 @@ int create_data_socket() {
     return d;
 }
 
+int create_epoll_fd() {
+    int epoll_fd = -1;
+    epoll_fd = epoll_create1(0);
+    if ( epoll_fd == -1 ) {
+        log_error(&log_ctx, "error creating epoll fd\n");
+        return ERROR_SERVER_EPOLL_FD_CREATE;
+    }
+    return epoll_fd;
+}
 
 
+char* get_resource_from_message(const char* mes, const char* prefix) {
+    if (strncmp(mes, prefix, strlen(prefix)) == 0) {
+        char* rest = strchr(mes, ' ');
+        if (rest != NULL) {
+            return rest + 1;
+        }
+    }
+    return NULL;
+}
+
+void set_nonblocking(int fd) {
+    int flags = fcntl(fd, F_GETFL, 0);
+    if (flags == -1) {
+        perror("fcntl F_GETFL");
+        exit(EXIT_FAILURE);
+    }
+    if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1) {
+        perror("fcntl F_SETFL O_NONBLOCK");
+        exit(EXIT_FAILURE);
+    }
+}
