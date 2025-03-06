@@ -205,6 +205,14 @@ int do_op(int epoll_fd, int event_fd, char* buffer) {
         log_info(&log_ctx, "closing fd\n");
         close(event_fd);
         epoll_ctl(epoll_fd, EPOLL_CTL_DEL, event_fd, NULL);
+        // remove connection from connections
+        for (int i = 0; i < MAX_CONNECTIONS; i++) {
+            if (connections[i].client_fd == event_fd) {
+                connections[i].client_fd = -1;
+                memset(connections[i].resource, 0, sizeof(connections[i].resource));
+                break;
+            }
+        }
         return 0;
     }
 
