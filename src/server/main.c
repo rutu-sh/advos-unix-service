@@ -76,10 +76,10 @@ int main() {
             if ( event_fd == conn_sock ) {
                 while ( (client_fd = accept(conn_sock, NULL, NULL)) != -1 ) {
 
-                    if (!is_client_authorized(client_fd)) {
-                        close(client_fd);
-                        continue;
-                    }
+                    // if (!is_client_authorized(client_fd)) {
+                    //     close(client_fd);
+                    //     continue;
+                    // }
 
                     idx = find_next_available_conn_idx();
                     if ( idx == -1 ) {
@@ -123,7 +123,9 @@ int main() {
                     buffer[read_bytes] = 0;
 
                     // do operation based on protocol
-                    if (do_op(epoll_fd, event_fd, buffer) < 0) {
+
+                    ret = do_op(epoll_fd, event_fd, buffer);
+                    if ( ret != 0 ) {
                         log_error(&log_ctx, "error doing operation\n");
                         perror("error doing operation\n");
                     }

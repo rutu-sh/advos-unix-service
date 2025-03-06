@@ -123,9 +123,14 @@ int do_op(int epoll_fd, int event_fd, char* buffer) {
     // printf("buffer and client fd: %s %d\n", buffer, event_fd);
 
     // PUB <resource>
-    if ( strncmp(buffer, "PUB", 3)  == 0 ) {
+    char* resource; 
+    if ( strncmp(buffer, "PUB ", 4)  == 0 ) {
         for (int i = 0; i < MAX_CONNECTIONS; i++) {
             if (connections[i].client_fd == event_fd) {
+                resource = get_resource_from_message(buffer, "PUB");
+                if(resource == NULL) {
+                    return ERROR_SERVER_INVALID_INPUT;
+                }
                 memset(connections[i].resource, 0, sizeof(connections[i].resource));
                 strcpy(connections[i].resource, get_resource_from_message(buffer, "PUB"));
                 // log_info(&log_ctx, "client published resource\n");
@@ -143,12 +148,12 @@ int do_op(int epoll_fd, int event_fd, char* buffer) {
         if (file_needed == NULL) {
             log_error(&log_ctx, "error getting resource from client message\n");
             perror("error reading resource\n");
-            return -1;
+            return ERROR_SERVER_INVALID_INPUT;
         }
 
         // loop through all clients and check if they have the resource
         for (int i = 0; i < MAX_CONNECTIONS; i++) {
-            if (connections[i].client_fd != -1) {
+            if (connections[i].client_fd != -1 && connections[i].client_fd != event_fd) {
                 if (strcmp(connections[i].resource, file_needed) == 0) {
 
                     // found the resource
@@ -162,9 +167,13 @@ int do_op(int epoll_fd, int event_fd, char* buffer) {
                     printf("sending REQ message to client\n");
 
                     if (write(connections[i].client_fd, cl_mess, sizeof(cl_mess)) < 0) {
+                        // client closed abruptly? 
+                        connections[i].client_fd = -1;
+                        memset(connections[i].resource, 0, sizeof(connections[i].resource));
                         log_error(&log_ctx, "error sending REQ message to client\n");
                         perror("error sending REQ message to client\n");
-                        return -1;
+                        send_fd(event_fd, STDIN_FILENO); // default fd because client is waiting
+                        return ERROR_SERVER_CLIENT_EXIT;
                     }
 
                     printf("sent REQ message to client\n");
@@ -173,9 +182,9 @@ int do_op(int epoll_fd, int event_fd, char* buffer) {
                     if (resource_fd < 0) {
                         log_error(&log_ctx, "error receiving resource fd\n");
                         perror("error receiving resource fd\n");
-                        return -1;
+                        send_fd(event_fd, STDIN_FILENO);
+                        return ERROR_SERVER_RECV_FD;
                     }
-
 
                     printf("received resource fd %d\n", resource_fd);
 
@@ -183,7 +192,7 @@ int do_op(int epoll_fd, int event_fd, char* buffer) {
                     if (send_fd(event_fd, resource_fd) < 0) {
                         log_error(&log_ctx, "error sending resource fd\n");
                         perror("error sending resource fd\n");
-                        return -1;
+                        return ERROR_SERVER_SEND_FD;
                     }
 
                     // success
@@ -218,7 +227,7 @@ int do_op(int epoll_fd, int event_fd, char* buffer) {
 
     log_error(&log_ctx, "invalid message from client\n");
     perror("invalid message from client\n");
-    return -1;
+    return ERROR_SERVER_INVALID_INPUT;
 }
 
 char* get_resource_from_message(const char* mes, const char* prefix) {
