@@ -65,7 +65,7 @@ int create_epoll_fd() {
     return epoll_fd;
 }
 
-
+// get the resource name from the message
 char* get_resource_from_message(const char* mes, const char* prefix) {
     char* rest;
     if (strncmp(mes, prefix, strlen(prefix)) == 0) {
@@ -100,7 +100,7 @@ void set_nonblocking(int fd) {
     }
 }
 
-
+// handle the standard input
 int handle_stdin_event(char w_buffer[BUFFER_SIZE], char fr_buffer[BUFFER_SIZE]) {
     int write_bytes, read_bytes, received_fd;
     char *fname;
@@ -110,6 +110,7 @@ int handle_stdin_event(char w_buffer[BUFFER_SIZE], char fr_buffer[BUFFER_SIZE]) 
         graceful_exit("exiting\n", 0);
         return -1;
     } else if (strncmp(w_buffer, "PUB", 3) == 0) {
+        // PUB <resource>
         fname = get_resource_from_message(w_buffer, "PUB");
         if (fname == NULL || strlen(fname) == 0) {
             printf("Missing filename for PUB command\n");
@@ -120,11 +121,12 @@ int handle_stdin_event(char w_buffer[BUFFER_SIZE], char fr_buffer[BUFFER_SIZE]) 
             printf("Error opening file %s\n", fname);
             return -1;
         }
+        // write some data to the file (for testing)
         char text[256] = "This is ";
         strcat(text, fname);
         write(fd, text, strlen(text));
         lseek(fd, 0, SEEK_SET);
-
+        // write the message to the data socket
         write_bytes = write(data_sock, w_buffer, strlen(w_buffer));
         if (write_bytes == -1) {
             log_error(&log_ctx, "error writing to socket\n");
@@ -134,6 +136,8 @@ int handle_stdin_event(char w_buffer[BUFFER_SIZE], char fr_buffer[BUFFER_SIZE]) 
         }
         close(fd);
     } else if (strncmp(w_buffer, "REQ", 3) == 0) {
+        // REQ <resource>
+        // Request a file from the server
         fname = get_resource_from_message(w_buffer, "REQ");
         if (fname == NULL || strlen(fname) == 0) {
             printf("Missing filename for REQ command\n");
@@ -166,7 +170,7 @@ int handle_stdin_event(char w_buffer[BUFFER_SIZE], char fr_buffer[BUFFER_SIZE]) 
     return 0;
 }
 
-
+// handle the data socket
 int handle_datasock_event(char r_buffer[BUFFER_SIZE]) {
     int read_bytes, fd_to_send;
     char *filename;
@@ -190,6 +194,7 @@ int handle_datasock_event(char r_buffer[BUFFER_SIZE]) {
     printf("server> %s\n", r_buffer);
 
     if (strncmp(r_buffer, "REQ", 3) == 0) {
+        // Got a request for a file from server
         filename = get_resource_from_message(r_buffer, "REQ");
         if (filename == NULL || strlen(filename) == 0) {
             log_error(&log_ctx, "missing filename in REQ message\n");
