@@ -24,6 +24,7 @@ int log_file;
 void _replace_log_fds(){
     log_ctx.errfd = log_file;
     log_ctx.outfd = log_file;
+    log_ctx.isStdLogger = 0;
 }
 
 

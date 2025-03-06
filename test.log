@@ -1,7 +1,7 @@
-[32m[info] [0mcreating domain socket
-[32m[info] [0mcreating domain socket
-[32m[info] [0mbinding socket to address
-[32m[info] [0mbind successful
-[32m[info] [0mcreating domain socket
-[32m[info] [0mcreating domain socket
-[32m[info] [0mclient published resource: 
+[info] creating domain socket
+[info] creating domain socket
+[info] binding socket to address
+[info] bind successful
+[info] creating domain socket
+[info] creating domain socket
+[info] client published resource: 
