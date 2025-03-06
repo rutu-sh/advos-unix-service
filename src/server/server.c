@@ -120,7 +120,7 @@ void set_nonblocking(int fd) {
 
 int do_op(int epoll_fd, int event_fd, char* buffer) {
 
-    printf("buffer and client fd: %s %d\n", buffer, event_fd);
+    // printf("buffer and client fd: %s %d\n", buffer, event_fd);
 
     // PUB <resource>
     if ( strncmp(buffer, "PUB", 3)  == 0 ) {
@@ -128,7 +128,6 @@ int do_op(int epoll_fd, int event_fd, char* buffer) {
             if (connections[i].client_fd == event_fd) {
                 memset(connections[i].resource, 0, sizeof(connections[i].resource));
                 strcpy(connections[i].resource, get_resource_from_message(buffer, "PUB"));
-
                 // log_info(&log_ctx, "client published resource\n");
                 break;
             }

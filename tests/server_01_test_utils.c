@@ -119,9 +119,9 @@ void test_set_nonblocking() {
 
 void test_get_resource_from_message() {
     char* ut_name = "test_get_resource_from_message";
-    assert(strcmp(get_resource_from_message("REQ_abc.txt", "REQ_"), "abc.txt") == 0);
-    assert(strcmp(get_resource_from_message("PUB_abc.txt", "PUB_"), "abc.txt") == 0); 
-    assert(get_resource_from_message("REQ_abc.txt", "PUB_") == NULL);
+    assert(strcmp(get_resource_from_message("REQ abc.txt", "REQ "), "abc.txt") == 0);
+    assert(strcmp(get_resource_from_message("PUB abc.txt", "PUB "), "abc.txt") == 0); 
+    assert(get_resource_from_message("REQ_abc.txt", "PUB ") == NULL);
     printf("test:%s:\033[1;33m%s\033[0m:\033[32mPASSED\033[0m\n", test_name, ut_name); 
 }
 
@@ -135,7 +135,9 @@ void test_do_op() {
     int efd = create_epoll_fd();
     
     connections[idx] = temp_client;
-    int ret = do_op(efd, temp_client.client_fd, "PUB_test.txt");
+    strcpy(buffer, "PUB_test.txt");
+    int ret = do_op(efd, temp_client.client_fd, "PUB test.txt");
+    memset(buffer, 0, sizeof(buffer));
     close(efd);
     
     assert(ret == 0);

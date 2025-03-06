@@ -11,8 +11,9 @@
 #include "common/errorcodes.h"
 #include "common/passfd.h"
 #define MAX_EVENTS 100
-extern LogContext log_ctx;
-extern int        data_sock;
+
+LogContext log_ctx;
+int        data_sock;
 
 
 int main() {

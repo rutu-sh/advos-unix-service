@@ -9,8 +9,8 @@ typedef struct sockaddr_un sockaddr_un;
 typedef struct sockaddr sockaddr;
 typedef struct LogContext LogContext;
 
-int data_sock;
-LogContext log_ctx;
+extern int data_sock;
+extern LogContext log_ctx;
 
 /*
     Initialize the server

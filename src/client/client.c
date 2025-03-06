@@ -11,7 +11,6 @@
 #include "common/connection.h"
 #include "common/errorcodes.h"
 
-extern int data_sock;
 
 void init() {
     get_std_logger(&log_ctx);

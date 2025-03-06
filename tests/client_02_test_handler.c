@@ -11,8 +11,10 @@
 #include "common/passfd.h"
 #include "common/errorcodes.h"
 
-extern int data_sock;
+int data_sock;
+LogContext log_ctx;
 const char* test_name = "client_02_test_handler";
+
 
 // Test for handle_stdin_event() on a PUB command.
 // This test uses a socketpair to emulate data_sock so that we can check what is written.
