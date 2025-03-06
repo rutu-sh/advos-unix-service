@@ -14,6 +14,19 @@
 int data_sock;
 LogContext log_ctx;
 const char* test_name = "client_02_test_handler";
+int log_file;
+
+
+void _replace_log_fds(){
+    log_ctx.errfd = log_file;
+    log_ctx.outfd = log_file;
+    log_ctx.isStdLogger = 0;
+}
+
+void _reset_to_defaults(){
+    init();
+    _replace_log_fds();
+}
 
 
 // Test for handle_stdin_event() on a PUB command.
@@ -85,7 +98,14 @@ void test_handle_datasock_event_nonreq() {
 }
 
 int main() {
+    log_file = open("client_test.log", O_CREAT | O_WRONLY | O_TRUNC, 0666);
+
+    _reset_to_defaults();
     test_handle_stdin_event_pub();
+
+    _reset_to_defaults();
     test_handle_datasock_event_nonreq();
+
+    close(log_file);
     return 0;
 }

@@ -173,4 +173,6 @@ int main() {
 
     _reset_to_defaults();
     test_get_resource_from_message();
+
+    close(log_file);
 }
