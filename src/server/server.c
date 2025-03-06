@@ -156,7 +156,7 @@ int do_op(int epoll_fd, int event_fd, char* buffer) {
                     log_info(&log_ctx, "found resource\n");
 
                     // ask client for resource fd
-                    char cl_mess[256] = "REQ_";
+                    char cl_mess[256] = "REQ ";
                     strcat(cl_mess, connections[i].resource);
 
                     printf("sending REQ message to client\n");
@@ -215,7 +215,7 @@ int do_op(int epoll_fd, int event_fd, char* buffer) {
 
 char* get_resource_from_message(const char* mes, const char* prefix) {
     if (strncmp(mes, prefix, strlen(prefix)) == 0) {
-        char* rest = strchr(mes, '_');
+        char* rest = strchr(mes, ' ');
         if (rest != NULL) {
             return rest + 1;
         }
