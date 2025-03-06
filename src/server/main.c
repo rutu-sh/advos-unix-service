@@ -7,6 +7,7 @@
 #include "server.h"
 #include "common/passfd.h"
 #include "common/errorcodes.h"
+#include "auth.h"
 
 
 client_inst_t connections[MAX_CONNECTIONS];
@@ -74,6 +75,11 @@ int main() {
             // events on the conn socket
             if ( event_fd == conn_sock ) {
                 while ( (client_fd = accept(conn_sock, NULL, NULL)) != -1 ) {
+
+                    if (!is_client_authorized(client_fd)) {
+                        close(client_fd);
+                        continue;
+                    }
 
                     idx = find_next_available_conn_idx();
                     if ( idx == -1 ) {
