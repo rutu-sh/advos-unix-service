@@ -10,7 +10,7 @@
 #include "client.h"
 #include "common/errorcodes.h"
 #include "common/passfd.h"
-#define MAX_EVENTS 2
+#define MAX_EVENTS 100
 LogContext log_ctx;
 int        data_sock;
 
@@ -48,7 +48,7 @@ int main() {
         exit(EXIT_FAILURE);
     }
     // set_nonblocking(data_sock);
-    set_nonblocking(STDIN_FILENO);
+    // set_nonblocking(STDIN_FILENO);
 
     // add data socket to epoll
     epoll_fd = create_epoll_fd();
@@ -75,6 +75,7 @@ int main() {
         }
 
         for (int i = 0; i < nfds; i++) {
+            printf("event on fd %d\n", events[i].data.fd);
 
         if ( events[i].data.fd == STDIN_FILENO ) {
             // printf("\nclient> ");
@@ -121,6 +122,8 @@ int main() {
                     close(fd);
                     continue;
                 }
+
+                printf("client finished writing to socket after PUB\n");
             }
             else if(strncmp(w_buffer, "REQ", 3) == 0){
                 fname=get_resource_from_message(w_buffer, "REQ");
@@ -153,18 +156,12 @@ int main() {
                 
             }
             else{
-                write_bytes = write(data_sock, w_buffer, strlen(w_buffer));
-                if(write_bytes == -1){
-                    log_error(&log_ctx, "error writing to socket\n");
-
-                }
+                printf("Invalid command\n");
             }
         }
         // poll for data on the data socket
         else if ( events[i].data.fd == data_sock ) {
             log_info(&log_ctx, "waiting for server to ask for file\n");
-            for(int i = 0; i<nfds; i++){
-                if(events[i].data.fd == data_sock){
                     printf("starting read on data socket\n");
                     read_bytes = read(data_sock, r_buffer, sizeof(r_buffer));
                     printf("read %d bytes\n", read_bytes);
@@ -203,8 +200,7 @@ int main() {
                     }
                     
                 }
-            }
-        }
+        
 
     }
 

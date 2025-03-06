@@ -99,6 +99,7 @@ int main() {
 
                 // events on any of the other sockets
                 log_info(&log_ctx, "event on client fd\n");
+                printf("event on client fd %d\n", event_fd);
                 read_bytes = read(event_fd, buffer, sizeof(buffer));
 
                 if ( read_bytes == 0 ) {
@@ -116,7 +117,7 @@ int main() {
                     buffer[read_bytes] = 0;
 
                     // do operation based on protocol
-                    if (do_op(epoll_fd, event_fd, &connections[idx], buffer) < 0) {
+                    if (do_op(epoll_fd, event_fd, buffer) < 0) {
                         log_error(&log_ctx, "error doing operation\n");
                         perror("error doing operation\n");
                     }

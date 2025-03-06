@@ -65,7 +65,7 @@ char* get_resource_from_message(const char* mes, const char* prefix);
 /*
     Perform the operation requested by the client based on protocol message
 */
-int do_op(int epoll_fd, int event_fd, client_inst_t* client, char* buffer);
+int do_op(int epoll_fd, int event_fd, char* buffer);
 
 /*
     Initialize the server

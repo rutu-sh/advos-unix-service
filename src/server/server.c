@@ -117,22 +117,23 @@ void set_nonblocking(int fd) {
     }
 }
 
-int do_op(int epoll_fd, int event_fd, client_inst_t* client, char* buffer) {
+int do_op(int epoll_fd, int event_fd, char* buffer) {
 
-    printf("buffer: %s\n", buffer);
+    printf("buffer and client fd: %s %d\n", buffer, event_fd);
 
     // PUB <resource>
     if ( strncmp(buffer, "PUB", 3)  == 0 ) {
-        memset(client->resource, 0, sizeof(client->resource));
-        strcpy(client->resource, get_resource_from_message(buffer, "PUB"));
+        for (int i = 0; i < MAX_CONNECTIONS; i++) {
+            if (connections[i].client_fd == event_fd) {
+                memset(connections[i].resource, 0, sizeof(connections[i].resource));
+                strcpy(connections[i].resource, get_resource_from_message(buffer, "PUB"));
 
-        if (client->resource == NULL) {
-            log_error(&log_ctx, "error getting resource from client message\n");
-            perror("error reading resource\n");
-            return -1;
+                // log_info(&log_ctx, "client published resource\n");
+                break;
+            }
         }
+
         log_info(&log_ctx, "client published resource: \n");
-        printf("client published resource: %s\n", client->resource);
         return 0;
     }
 
@@ -174,8 +175,11 @@ int do_op(int epoll_fd, int event_fd, client_inst_t* client, char* buffer) {
                         return -1;
                     }
 
+
+                    printf("received resource fd %d\n", resource_fd);
+
                     // send to client
-                    if (send_fd(client->client_fd, resource_fd) < 0) {
+                    if (send_fd(event_fd, resource_fd) < 0) {
                         log_error(&log_ctx, "error sending resource fd\n");
                         perror("error sending resource fd\n");
                         return -1;
@@ -191,7 +195,7 @@ int do_op(int epoll_fd, int event_fd, client_inst_t* client, char* buffer) {
 
         // resource not found
         log_info(&log_ctx, "resource not found\n");
-        send_fd(client->client_fd, -1);
+        send_fd(event_fd, STDIN_FILENO);
         return 0;
     }
 
