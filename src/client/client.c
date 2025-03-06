@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <sys/epoll.h>
+#include <sys/stat.h>
 
 #include "common/passfd.h"
 #include "client.h"
@@ -153,10 +154,30 @@ int handle_stdin_event(char w_buffer[BUFFER_SIZE], char fr_buffer[BUFFER_SIZE]) 
             log_error(&log_ctx, "error receiving file descriptor\n");
             return -1;
         }
+
+        // check if resource is not found
+
+        struct stat stat_stdin, stat_received;
+        if (fstat(STDIN_FILENO, &stat_stdin) == -1) {
+            log_error(&log_ctx, "error getting file descriptor stats\n");
+            return -1;
+        }
+
+        if (fstat(received_fd, &stat_received) == -1) {
+            log_error(&log_ctx, "error getting file descriptor stats\n");
+            return -1;
+        }
+
+        if (stat_stdin.st_dev == stat_received.st_dev ) {
+            log_error(&log_ctx, "resource not found\n");
+            close(received_fd);
+            return 0;
+        }
+
         printf("Received file descriptor %d\n", received_fd);
         while ((read_bytes = read(received_fd, fr_buffer, BUFFER_SIZE)) > 0) {
             fr_buffer[read_bytes] = '\0';
-            printf("%s", fr_buffer);
+            printf("%s\n", fr_buffer);
         }
         if (read_bytes == -1) {
             log_error(&log_ctx, "error reading from file descriptor\n");
