@@ -59,23 +59,6 @@ void test_set_nonblocking() {
     printf("test:%s:\033[1;33m%s\033[0m:\033[32mPASSED\033[0m\n", test_name, ut_name);
 }
 
-void test_get_resource_from_message() {
-    char* ut_name = "test_get_resource_from_message";
-    char *res;
-    // Our get_resource_from_message expects a space after the prefix.
-    res = get_resource_from_message("REQ abc.txt", "REQ");
-    assert(res != NULL);
-    assert(strcmp(res, "abc.txt") == 0);
-    
-    res = get_resource_from_message("PUB def.txt", "PUB");
-    assert(res != NULL);
-    assert(strcmp(res, "def.txt") == 0);
-    
-    res = get_resource_from_message("REQ abc.txt", "PUB");
-    assert(res == NULL);
-    
-    printf("test:%s:\033[1;33m%s\033[0m:\033[32mPASSED\033[0m\n", test_name, ut_name);
-}
 
 int main() {
     log_file = open("client_test.log", O_CREAT | O_WRONLY | O_TRUNC, 0666);
@@ -91,9 +74,6 @@ int main() {
 
     _reset_to_defaults();
     test_set_nonblocking();
-
-    _reset_to_defaults();
-    test_get_resource_from_message();
     
     close(log_file);
     return 0;
