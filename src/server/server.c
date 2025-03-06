@@ -156,6 +156,14 @@ int do_op(int epoll_fd, int event_fd, char* buffer) {
 
                     // ask client for resource fd
                     char cl_mess[256] = "REQ ";
+
+                    if( send(connections[i].client_fd, "ping", 4, 0) == -1 ){
+                        connections[i].client_fd = -1;
+                        memset(connections[i].resource, 0, sizeof(connections[i].resource));
+                        log_error(&log_ctx, "client no longer exists\n");
+                        continue;
+                    }
+
                     strcat(cl_mess, connections[i].resource);
 
                     printf("sending REQ message to client\n");
