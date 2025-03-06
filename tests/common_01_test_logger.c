@@ -17,7 +17,7 @@ int test_std_logger_init() {
     assert(log_ctx.isStdLogger == 1);
     assert(log_ctx.outfd == fileno(stdout));
     assert(log_ctx.errfd == fileno(stderr));
-    printf("test:%s:\033[1;33m%s\033[0m:\033[32mPASSED\033[0m\n", ut_name, test_name);
+    printf("test:%s:\033[1;33m%s\033[0m:\033[32mPASSED\033[0m\n", test_name, ut_name);
     return 0;
 }
 
@@ -57,8 +57,13 @@ int test_std_log_msg() {
 
     close(out_pipe[0]);
     close(out_pipe[1]);
-    printf("test:%s:\033[1;33m%s\033[0m:\033[32mPASSED\033[0m\n", ut_name, ut_name);
+    printf("test:%s:\033[1;33m%s\033[0m:\033[32mPASSED\033[0m\n", test_name, ut_name);
     return 0;
+}
+
+
+void test_create_epoll_fd(){
+    
 }
 
 

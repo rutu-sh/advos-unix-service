@@ -17,6 +17,7 @@ void init() {
     // init empty clients
     for (int i = 0; i < MAX_CONNECTIONS; i++) {
         connections[i].client_fd = -1;
+        memset(connections[i].resource, 0, sizeof(connections[i].resource));
     }
 
     get_std_logger(&log_ctx);
