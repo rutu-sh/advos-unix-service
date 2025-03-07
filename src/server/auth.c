@@ -9,14 +9,17 @@
 #include <errno.h>
 #include <sys/resource.h>
 #include <time.h>
+#include "server.h"
 
 #define ALLOWED_UID 1000 
-#define MAX_CONNECTIONS 10  
+ 
 
 // For tracking resource usage
 static int total_attempts = 0;
 static int authorized_clients = 0;
 static int rejected_clients = 0;
+
+
 
 struct ucred get_client_credentials(int client_fd) {
     struct ucred creds;
@@ -63,37 +66,22 @@ int is_client_authorized(int client_fd) {
 
     struct ucred creds = get_client_credentials(client_fd);
     if (creds.uid == (uid_t)-1) {
-        printf("Warning: Failed to retrieve client credentials.\n");
+        //printf("Warning: Failed to retrieve client credentials.\n");
         rejected_clients++;
         return 0;
     }
 
-    printf("Client connected: PID=%d, UID=%d, GID=%d\n", creds.pid, creds.uid, creds.gid);
 
     if (creds.uid != ALLOWED_UID) {
-        printf("Warning: Unauthorized client (UID=%d). Closing connection.\n", creds.uid);
+        //printf("Warning: Unauthorized client (UID=%d). Closing connection.\n", creds.uid);
         rejected_clients++;
         return 0;
     }
 
-    printf("Authorized client.\n");
+    log_info(&log_ctx, "Authorized client.\n");
     authorized_clients++;
 
-    track_client_resources(client_fd);
+    //track_client_resources(client_fd);
 
     return 1;
-}
-
-// Prints authorization statistics
-void print_client_usage(int client_fd) {
-    struct ucred creds = get_client_credentials(client_fd);
-    if (creds.uid == (uid_t)-1) return;
-
-    struct rusage usage;
-    if (getrusage(RUSAGE_SELF, &usage) == 0) {
-        printf("Client PID %d disconnected. Final Resource Usage: CPU time (user): %ld sec, Memory: %ld KB\n",
-               creds.pid, usage.ru_utime.tv_sec, usage.ru_maxrss);
-    } else {
-        fprintf(stderr, "Error: Failed to get resource usage for client PID %d: %s\n", creds.pid, strerror(errno));
-    }
 }

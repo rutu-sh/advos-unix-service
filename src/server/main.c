@@ -87,10 +87,10 @@ int main() {
             if ( event_fd == conn_sock ) {
                 while ( (client_fd = accept(conn_sock, NULL, NULL)) != -1 ) {
 
-                    // if (!is_client_authorized(client_fd)) {
-                    //     close(client_fd);
-                    //     continue;
-                    // }
+                    if (!is_client_authorized(client_fd)) {
+                        close(client_fd);
+                        continue;
+                    }
 
                     idx = find_next_available_conn_idx();
                     if ( idx == -1 ) {
@@ -122,12 +122,17 @@ int main() {
                 if ( read_bytes == 0 ) {
                     // client hung up?
                     log_error(&log_ctx, "client disconnected\n");
+                   
                     perror("client disconnected\n");
+
+                    track_client_resources(event_fd);
                     close(event_fd);
                     epoll_ctl(epoll_fd, EPOLL_CTL_DEL, event_fd, NULL);
                 } else if ( read_bytes == -1 ) {
                     log_error(&log_ctx, "client error\n");
                     perror("client error\n");
+
+                    track_client_resources(event_fd);
                     close(event_fd);
                     epoll_ctl(epoll_fd, EPOLL_CTL_DEL, event_fd, NULL);
                 } else {
