@@ -138,7 +138,7 @@ int do_op(int epoll_fd, int event_fd, char* buffer) {
             }
         }
 
-        log_info(&log_ctx, "client published resource: \n");
+        log_info(&log_ctx, "client published resource \n");
         return 0;
     }
 

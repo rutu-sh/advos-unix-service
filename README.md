@@ -144,6 +144,7 @@ To run our project:
     test:client_01_test_utils:test_create_data_socket:PASSED
     test:client_01_test_utils:test_create_epoll_fd:PASSED
     test:client_01_test_utils:test_set_nonblocking:PASSED
+    test:server_01_test_auth:test_get_client_credentials_invalid:PASSED
     test:common_01_test_logger:test_std_logger_init:PASSED
     test:common_01_test_logger:test_std_log:PASSED
     ---------FINISHED TESTS---------
