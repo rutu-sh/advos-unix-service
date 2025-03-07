@@ -7,8 +7,7 @@
 #include <unistd.h>
 #include <syslog.h>
 #include <sys/resource.h>
-
-#define INVALID_UID ((uid_t)-1U)   
+  
 #define ALLOWED_UID 1000 
 
 struct ucred {  

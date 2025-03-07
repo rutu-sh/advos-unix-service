@@ -10,7 +10,6 @@
 #include <sys/resource.h>
 #include <time.h>
 
-#define INVALID_UID ((uid_t)-1U)   
 #define ALLOWED_UID 1000 
 #define MAX_CONNECTIONS 10  
 
@@ -25,8 +24,9 @@ struct ucred get_client_credentials(int client_fd) {
     socklen_t len = sizeof(creds);
 
     if (getsockopt(client_fd, SOL_SOCKET, SO_PEERCRED, &creds, &len) == -1) {
-        fprintf(stderr, "Error: getsockopt failed: %s\n", strerror(errno));
-        creds.uid = INVALID_UID;
+        creds.uid = (uid_t)-1;
+        //fprintf(stderr, "Error: getsockopt failed: %s\n", strerror(errno));
+        return creds;
     }
     return creds;
 }
@@ -34,7 +34,7 @@ struct ucred get_client_credentials(int client_fd) {
 // Resource usage (CPU & memory)
 void track_client_resources(int client_fd) {
     struct ucred creds = get_client_credentials(client_fd);
-    if (creds.uid == INVALID_UID) return;
+    if (creds.uid == (uid_t)-1) return;
 
     struct rusage usage;
     if (getrusage(RUSAGE_SELF, &usage) == 0) {
@@ -62,7 +62,7 @@ int is_client_authorized(int client_fd) {
     }
 
     struct ucred creds = get_client_credentials(client_fd);
-    if (creds.uid == INVALID_UID) {
+    if (creds.uid == (uid_t)-1) {
         printf("Warning: Failed to retrieve client credentials.\n");
         rejected_clients++;
         return 0;
@@ -87,7 +87,7 @@ int is_client_authorized(int client_fd) {
 // Prints authorization statistics
 void print_client_usage(int client_fd) {
     struct ucred creds = get_client_credentials(client_fd);
-    if (creds.uid == INVALID_UID) return;
+    if (creds.uid == (uid_t)-1) return;
 
     struct rusage usage;
     if (getrusage(RUSAGE_SELF, &usage) == 0) {
