@@ -50,11 +50,11 @@ For more detailed information on the implementation, please refer to the followi
 
 To run our project:
 1. Compile the project using the provided Makefile: 
-    ```console
+    ```bash
     make
     ```
     The expected output should look like this: 
-    ```console
+    ```bash
     (TERMINAL_1)@/advos-unix-service$ make
     gcc -Wall -Wextra -Isrc -MMD -MP -c -o .build/server/auth.o src/server/auth.c 
     gcc -Wall -Wextra -Isrc -MMD -MP -c -o .build/server/main.o src/server/main.c 
@@ -67,20 +67,20 @@ To run our project:
     gcc -Wall -Wextra -Isrc -MMD -MP -o client.out .build/client/client.o .build/client/main.o .build/common/logger.o .build/common/passfd.o
     ```
 2. Run the server: 
-    ```console
+    ```bash
     make start_nameserver
     ```
     The expected output should look like this:
-    ```console
+    ```bash
     (TERMINAL_1)@/advos-unix-service$ make start_nameserver
     ./server.out > server.log 2>&1
     ```
 3. Run client 1: 
-    ```console
+    ```bash
     make start_client
     ```
     The expected output should look like this:
-    ```console
+    ```bash
     (TERMINAL_2)@/advos-unix-service$ make start_client 
     ./client.out
     [info] creating data socket
@@ -93,11 +93,11 @@ To run our project:
     ```
 
 4. Run client 2 in another terminal: 
-    ```console
+    ```bash
     make start_client
     ```
     The expected output should look like this:
-    ```console
+    ```bash
     (TERMINAL_3)@/advos-unix-service$ make start_client 
     ./client.out
     [info] creating data socket
@@ -114,11 +114,11 @@ To run our project:
 5. Observe `server.log` to see the logs for nameserver. If you would like to kill the nameserver, simply use `kill <pid>` using the PID from the log file.
 
 6. Run the tests: 
-    ```console
+    ```bash
     make test
     ```
     The expected output should look like this:
-    ```console
+    ```bash
     (TERMINAL_1)@/advos-unix-service$ make test
     gcc -Wall -Wextra -Isrc -MMD -MP -c -o .build/common/logger.o src/common/logger.c 
     gcc -Wall -Wextra -Isrc -MMD -MP -c -o .build/common/passfd.o src/common/passfd.c 
@@ -171,3 +171,4 @@ These resources proved to be useful during the development of this project.
 
 5. ChatGPT - 
     - Color codes: Prompt("give me all the color codes for linux terminals")
+
