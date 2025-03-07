@@ -34,11 +34,11 @@ The project was divided into several parts, with each group member contributing 
 ### High-Level Design
 
 How do we handle each of the requirements for the project? The nameserver:
-1. Listens on a named domain socket for incoming client connections.
-2. Maintain a registry of active connections and their associated resources.
-3. Handle `PUB <resource>` commands to publish resources.
-4. Handle `REQ <resource>` commands to request resources.
-5. Facilitate the transfer of file descriptors between clients.
+1. Listens on a named domain socket for incoming client connections. (`/tmp/sock-test.socket`)
+2. Uses `accept()` to create unique fd per client in the main event loop of the server.
+3. The event loop of the server uses `epoll` for concurrency.
+4. Authenticates each client using `getsockopt`.
+5. Relays file descriptors of resources between clients using `sendmsg` and `recvmsg`.
 
 For more detailed information on the implementation, please refer to the following files:
 - [Core server loop](./src/server/main.c)
