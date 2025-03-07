@@ -116,16 +116,20 @@ int handle_stdin_event(char w_buffer[BUFFER_SIZE], char fr_buffer[BUFFER_SIZE]) 
             printf("Missing filename for PUB command\n");
             return -1;
         }
-        int fd = open(fname, O_RDWR | O_CREAT, 0666);
+        int fd = open(fname, O_RDWR, 0666);
         if (fd == -1) {
-            printf("Error opening file %s\n", fname);
-            return -1;
+            fd = open(fname, O_RDWR | O_CREAT, 0666);
+            if (fd == -1) {
+                log_error(&log_ctx, "error opening file\n");
+                return -1;
+            }
+            // write some data to the file (for testing)
+            char text[256] = "This is ";
+            strcat(text, fname);
+            write(fd, text, strlen(text));
+            lseek(fd, 0, SEEK_SET);
         }
-        // write some data to the file (for testing)
-        char text[256] = "This is ";
-        strcat(text, fname);
-        write(fd, text, strlen(text));
-        lseek(fd, 0, SEEK_SET);
+        
         // write the message to the data socket
         write_bytes = write(data_sock, w_buffer, strlen(w_buffer));
         if (write_bytes == -1) {

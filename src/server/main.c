@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/socket.h>
+#include <stdlib.h>
 
 #include "server.h"
 #include "common/passfd.h"
@@ -29,6 +30,16 @@ int main() {
     // int         write_bytes;
     // int         fd_file;
     sockaddr_un name;
+
+    pid_t pid = fork();
+    if (pid < 0) {
+        perror("fork");
+        exit(1);
+    }
+    if (pid != 0) {
+        printf("Nameserver started with PID: %d\n", pid);
+        exit(0);
+    }
 
     init();
 

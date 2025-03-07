@@ -84,7 +84,13 @@ test: clean compile_common_tests compile_server_tests compile_client_tests
 	echo "---------FINISHED TESTS---------"
 
 start_nameserver: $(SERVER_TARGET)
+	rm -f server.log
 	./$(SERVER_TARGET) > server.log 2>&1
+
+start_client: $(CLIENT_TARGET)
+	./$(CLIENT_TARGET)
+
+
 
 # cleanup
 clean:

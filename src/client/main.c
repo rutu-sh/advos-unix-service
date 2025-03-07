@@ -64,8 +64,14 @@ int main() {
         graceful_exit("error epoll_ctl\n", ERROR_CLIENT_EPOLL_CTL);
     }
 
+    printf("Commands available:\n");
+    printf("\t1. PUB <resource>\n");
+    printf("\t2. REQ <resource>\n");
+    printf("\t3. exit\n");
+
+
     while(1) {
-        printf("\x1b[36mclient> \x1b[0m");
+        printf("\e[38;5;14mclient> \x1b[0m");
         fflush(stdout);
         nfds  = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
         if ( nfds == -1 ) {
