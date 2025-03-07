@@ -65,7 +65,7 @@ int main() {
     }
 
     while(1) {
-        printf("\x1b[34mclient> \x1b[0m");
+        printf("\x1b[36mclient> \x1b[0m");
         fflush(stdout);
         nfds  = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
         if ( nfds == -1 ) {

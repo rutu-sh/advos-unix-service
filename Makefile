@@ -83,6 +83,9 @@ test: clean compile_common_tests compile_server_tests compile_client_tests
 	./run_tests.sh && \
 	echo "---------FINISHED TESTS---------"
 
+start_nameserver: $(SERVER_TARGET)
+	./$(SERVER_TARGET) > server.log 2>&1
+
 # cleanup
 clean:
 	@rm -rf .build server.out client.out tests/*.out tests/*.o tests/*.d
