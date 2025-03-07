@@ -41,8 +41,8 @@ void track_client_resources(int client_fd) {
 
     struct rusage usage;
     if (getrusage(RUSAGE_SELF, &usage) == 0) {
-        printf("Client PID %d Resource Usage: CPU time (user): %ld sec, Memory: %ld KB\n",
-               creds.pid, usage.ru_utime.tv_sec, usage.ru_maxrss);
+        printf("Client PID %d Resource Usage: CPU time (user): %ld microsec, Memory: %ld KB\n",
+               creds.pid, usage.ru_utime.tv_usec, usage.ru_maxrss);
     } else {
         fprintf(stderr, "Error: Failed to get resource usage for client PID %d: %s\n", creds.pid, strerror(errno));
     }
